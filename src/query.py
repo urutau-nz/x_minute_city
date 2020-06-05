@@ -7,12 +7,11 @@ par = True
 par_frac = 0.9
 transport_mode = 'walking'#'driving'
 
-import utils
 from config import *
 logger = logging.getLogger(__name__)
 import math
 import os.path
-import osgeo.ogr
+# import osgeo.ogr
 import io
 import shapely
 from geoalchemy2 import Geometry, WKTElement
@@ -105,7 +104,7 @@ def query_points(db, context):
     orig_df.drop('geom',axis=1,inplace=True)
     orig_df.drop_duplicates(inplace=True)
     # set index
-    orig_df = orig_df.set_index('geoid10')
+    orig_df = orig_df.set_index('mb2018_v1_')
 
     # get list of destination ids
     sql = "SELECT * FROM destinations"

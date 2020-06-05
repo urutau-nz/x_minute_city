@@ -42,18 +42,18 @@ def cfg_init(state):
         db['name'] = 'access_nz_chc'
         context['city_code'] = 'chc'
         context['city'] = 'Christchurch'
-        context['state'] = 'Christchurch'
+        context['state'] = 'new-zealand'
         # url to the osrm routing machine
         context['port'] = '6001'
-        context['services'] = ['supermarket', 'school', 'hospital', 'library']
+        context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','medical_clinic','downtown']
     elif state == 'nz_ham':
         db['name'] = 'access_nz_ham'
         context['city_code'] = 'ham'
         context['city'] = 'Hamilton'
-        context['state'] = 'Hamilton'
+        context['state'] = 'new-zealand'
         # url to the osrm routing machine
         context['port'] = '6001'
-        context['services'] = ['supermarket', 'school', 'hospital', 'library']
+        context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','medical_clinic']
 
 
     context['osrm_url'] = 'http://localhost:' + context['port']
