@@ -96,7 +96,7 @@ def query_points(db, context):
     cursor = db['con'].cursor()
 
     # get list of all origin ids
-    sql = "SELECT * FROM block"
+    sql = "SELECT block_18.mb2018_v1_, block_18.geom FROM block_18, boundary WHERE ST_Intersects(block_18.geom, boundary.geom)"
     orig_df = gpd.GeoDataFrame.from_postgis(sql, db['con'], geom_col='geom')
     orig_df['x'] = orig_df.geom.centroid.x
     orig_df['y'] = orig_df.geom.centroid.y
