@@ -31,7 +31,7 @@ def main(state):
     db, context = cfg_init(state)
 
     # init the destination tables
-    #create_dest_table(db)
+    #create_dest_table(db, context)
 
     # query the distances
     query_points(db, context)
@@ -44,19 +44,20 @@ def main(state):
     #utils.send_email(body='Querying {} complete'.format(context['city']))
 
 
-def create_dest_table(db):
+def create_dest_table(db, context):
     '''
     create a table with the destinations
     '''
     # db connections
     con = db['con']
     engine = db['engine']
+    cursor = db['con'].cursor()
     # destinations and locations
-    types = ['supermarket', 'hospital']
+    types = context['services']
     # import the csv's
     gdf = gpd.GeoDataFrame()
     for dest_type in types:
-        files = '/homedirs/man112/access_inequality_index/data/usa/{}/{}/{}/{}_{}.shp'.format(state, context['city_code'], dest_type, state, dest_type)
+        files = '/homedirs/dak55/resilience_equity/data/{}/{}_{}.shp'.format(context['city_code'], dest_type, context['city_code'])
         df_type = gpd.read_file('{}'.format(files))
         # df_type = pd.read_csv('data/destinations/' + dest_type + '_FL.csv', encoding = "ISO-8859-1", usecols = ['id','name','lat','lon'])
         if df_type.crs['init'] != 'epsg:4269':
@@ -75,7 +76,7 @@ def create_dest_table(db):
     gdf.set_index(['id','dest_type'], inplace=True)
 
     # export to sql
-    gdf.to_sql('destinations', engine, dtype={'geom': Geometry('POINT', srid= 4269)})
+    gdf.to_sql('destinations', engine, if_exists='replace', dtype={'geom': Geometry('POINT', srid= 4269)})
 
     # update indices
     cursor = con.cursor()
