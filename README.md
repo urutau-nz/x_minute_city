@@ -26,3 +26,13 @@ for state in states:
 
 
 ```
+
+
+### Adding meshblock data to database
+Download appropriate meshblock shapefile. For example NZ 2018 census meshblocks: https://datafinder.stats.govt.nz/layer/92197-meshblock-2018-generalised/
+
+Find WKID:
+shp2pgsql -I -s 2193 meshblock-2018-generalised.shp block | psql -U postgres -d access_nz_ham -h 132.181.102.2 -p 5001
+
+Add city boundaries:
+http://archive.stats.govt.nz/browse_for_stats/Maps_and_geography/Geographic-areas/digital-boundary-files.aspx#annual

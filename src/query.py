@@ -31,10 +31,10 @@ def main(state):
     db, context = cfg_init(state)
 
     # init the destination tables
-    #create_dest_table(db, context)
+    create_dest_table(db, context)
 
     # query the distances
-    query_points(db, context)
+    #query_points(db, context)
 
     # close the connection
     db['con'].close()
@@ -71,7 +71,7 @@ def create_dest_table(db, context):
     # prepare for sql
     gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     #drop all columns except id, dest_type, and geom
-    gdf = gdf[['id','dest_type','geom']]
+    gdf = gdf[['id','dest_type', 'name', 'geom']]
     # set index
     gdf.set_index(['id','dest_type'], inplace=True)
 
