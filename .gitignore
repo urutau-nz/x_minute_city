@@ -1,4 +1,3 @@
-/data
 /.git
 .bash_history
 /venv
@@ -14,3 +13,4 @@ src/test.py
 inequality_function_test.py
 *.ai
 *.pdf
+*.csv

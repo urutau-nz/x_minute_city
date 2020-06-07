@@ -5,7 +5,7 @@ Query origins to dests in OSRM
 # user defined variables
 par = True
 par_frac = 0.9
-transport_mode = 'walking'#'driving'
+# transport_mode = 'walking'#'driving'
 
 from config import *
 logger = logging.getLogger(__name__)
@@ -17,24 +17,23 @@ import shapely
 from geoalchemy2 import Geometry, WKTElement
 import requests
 from sqlalchemy.types import Float, Integer
-import code
 if par == True:
     import multiprocessing as mp
     from joblib import Parallel, delayed
     from requests.adapters import HTTPAdapter
     from requests.packages.urllib3.util.retry import Retry
 
-def main(state):
+def main(state, transport_mode, append=False):
     '''
     set up the db tables I need for the querying
     '''
     db, context = cfg_init(state)
 
     # init the destination tables
-    create_dest_table(db, context)
+    #create_dest_table(db, context)
 
     # query the distances
-    #query_points(db, context)
+    query_points(db, context, transport_mode, append)
 
     # close the connection
     db['con'].close()
@@ -71,9 +70,7 @@ def create_dest_table(db, context):
     # prepare for sql
     gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     #drop all columns except id, dest_type, and geom
-    #code.interact(local=locals())
-    gdf = gdf[['id','dest_type', 'Name', 'geom']]
-    gdf = gdf.rename(columns={'Name':'name'})
+    gdf = gdf[['id','dest_type','geom']]
     # set index
     gdf.set_index(['id','dest_type'], inplace=True)
 
@@ -91,7 +88,7 @@ def create_dest_table(db, context):
     con.commit()
 
 
-def query_points(db, context):
+def query_points(db, context, transport_mode, append):
     '''
     query OSRM for distances between origins and destinations
     '''
@@ -99,7 +96,7 @@ def query_points(db, context):
     cursor = db['con'].cursor()
 
     # get list of all origin ids
-    sql = "SELECT block_18.mb2018_v1_, block_18.geom FROM block_18, boundary WHERE ST_Intersects(block_18.geom, boundary.geom)"
+    sql = "SELECT block_18.sa12018_v1, block_18.geom FROM block_18, boundary WHERE ST_Intersects(block_18.geom, boundary.geom)"
     orig_df = gpd.GeoDataFrame.from_postgis(sql, db['con'], geom_col='geom')
     orig_df['x'] = orig_df.geom.centroid.x
     orig_df['y'] = orig_df.geom.centroid.y
@@ -107,7 +104,7 @@ def query_points(db, context):
     orig_df.drop('geom',axis=1,inplace=True)
     orig_df.drop_duplicates(inplace=True)
     # set index
-    orig_df = orig_df.set_index('mb2018_v1_')
+    orig_df = orig_df.set_index('sa12018_v1')
 
     # get list of destination ids
     sql = "SELECT * FROM destinations"
@@ -122,31 +119,34 @@ def query_points(db, context):
     origxdest['duration'] = None
 
     # df of durations, distances, ids, and co-ordinates
-    origxdest = execute_table_query(origxdest, orig_df, dest_df, context)
+    origxdest = execute_table_query(origxdest, orig_df, dest_df, context, transport_mode)
 
     # add df to sql
     logger.info('Writing data to SQL')
-    write_to_postgres(origxdest, db, 'distance_duration')
+    write_to_postgres(origxdest, db, 'distance_duration', append)
     # origxdest.to_sql('distance_duration', con=db['engine'], if_exists='replace', index=False, dtype={"distance":Float(), "duration":Float(), 'id_dest':Integer()}, method='multi')
     logger.info('Distances written successfully to SQL')
     logger.info('Updating indices on SQL')
-    # update indices
-    queries = [
-                'CREATE INDEX "dest_idx" ON distance_duration ("id_dest");',
-                'CREATE INDEX "orig_idx" ON distance_duration ("id_orig");'
-                ]
-    for q in queries:
-        cursor.execute(q)
+
+    if not append:
+        # update indices
+        queries = [
+                    'CREATE INDEX "dest_idx" ON distance_duration ("id_dest");',
+                    'CREATE INDEX "orig_idx" ON distance_duration ("id_orig");'
+                    ]
+        for q in queries:
+            cursor.execute(q)
 
     # commit to db
     db['con'].commit()
     logger.info('Query Complete')
 
-def write_to_postgres(df, db, table_name):
+def write_to_postgres(df, db, table_name, append):
     ''' quickly write to a postgres database
         from https://stackoverflow.com/a/47984180/5890574'''
 
-    df.head(0).to_sql(table_name, db['engine'], if_exists='replace',index=False) #truncates the table
+    if not append:
+        df.head(0).to_sql(table_name, db['engine'], if_exists='replace',index=False) #truncates the table
 
     conn = db['engine'].raw_connection()
     cur = conn.cursor()
@@ -154,10 +154,10 @@ def write_to_postgres(df, db, table_name):
     df.to_csv(output, sep='\t', header=False, index=False)
     output.seek(0)
     cur.copy_from(output, table_name, null="") # null values become ''
-    con.commit()
+    conn.commit()
 
 
-def execute_table_query(origxdest, orig_df, dest_df, context):
+def execute_table_query(origxdest, orig_df, dest_df, context, transport_mode):
     # Use the table service so as to reduce the amount of requests sent
     # https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md#table-service
 
@@ -173,9 +173,9 @@ def execute_table_query(origxdest, orig_df, dest_df, context):
 
     # make a string of all the destination coordinates
     dest_string = ""
-    for j in range(dest_n):
+    for j in dest_df.index:
         #now add each dest in the string
-        dest_string += str(dest_df['lon'][j]) + "," + str(dest_df['lat'][j]) + ";"
+        dest_string += str(dest_df.loc[j,'lon']) + "," + str(dest_df.loc[j,'lat']) + ";"
     #remove last semi colon
     dest_string = dest_string[:-1]
 
@@ -220,6 +220,7 @@ def execute_table_query(origxdest, orig_df, dest_df, context):
     durs = [l for orig in results for l in orig[1]]
     origxdest['distance'] = dists
     origxdest['duration'] = durs
+    origxdest['mode'] = transport_mode
 
     return(origxdest)
 
