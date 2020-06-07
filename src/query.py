@@ -17,6 +17,7 @@ import shapely
 from geoalchemy2 import Geometry, WKTElement
 import requests
 from sqlalchemy.types import Float, Integer
+import code
 if par == True:
     import multiprocessing as mp
     from joblib import Parallel, delayed
@@ -70,7 +71,9 @@ def create_dest_table(db, context):
     # prepare for sql
     gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     #drop all columns except id, dest_type, and geom
-    gdf = gdf[['id','dest_type', 'name', 'geom']]
+    #code.interact(local=locals())
+    gdf = gdf[['id','dest_type', 'Name', 'geom']]
+    gdf = gdf.rename(columns={'Name':'name'})
     # set index
     gdf.set_index(['id','dest_type'], inplace=True)
 
@@ -151,7 +154,7 @@ def write_to_postgres(df, db, table_name):
     df.to_csv(output, sep='\t', header=False, index=False)
     output.seek(0)
     cur.copy_from(output, table_name, null="") # null values become ''
-    conn.commit()
+    con.commit()
 
 
 def execute_table_query(origxdest, orig_df, dest_df, context):
