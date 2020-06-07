@@ -1,7 +1,7 @@
 import subprocess
 from config import *
 
-mode_dict = {'driving':'car','walking':'foot','cycling':'bike'}
+mode_dict = {'driving':'car','walking':'foot','cycling':'bicycle'}
 
 def main(state, mode):
     ''' run the shell script that
