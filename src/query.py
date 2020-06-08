@@ -70,7 +70,8 @@ def create_dest_table(db, context):
     # prepare for sql
     gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     #drop all columns except id, dest_type, and geom
-    gdf = gdf[['id','dest_type','geom']]
+    gdf = gdf[['id','dest_type', 'Name', 'geom']]
+    gdf = gdf.rename(columns={'Name':'name'})
     # set index
     gdf.set_index(['id','dest_type'], inplace=True)
 

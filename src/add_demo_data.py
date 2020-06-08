@@ -9,31 +9,18 @@ Sorts census csv files and adds desired info to a datatable in access_nz
 #Imports
 
 import pickle as pk
-
 import pandas as pd
-
 import numpy as np
-
 import psycopg2
-
 from sqlalchemy.engine import create_engine
-
 from datetime import datetime, timedelta
-
 import itertools
-
 import time
-
 from time import sleep
-
 import progressbar as pb
-
 from tqdm import tqdm
-
 from psycopg2.extensions import register_adapter, AsIs
-
 psycopg2.extensions.register_adapter(np.int64, psycopg2._psycopg.AsIs)
-
 
 
 # Connections
@@ -48,21 +35,13 @@ port = '5001'
 
 db_name = 'access_nz_chc'
 
-
-
 engine = create_engine('postgresql+psycopg2://postgres:' + passw + '@' + host + '/' + db_name + '?port=' + port)
 
 connect_string = "host=" + host + " dbname=" + db_name + " user=postgres password='"+ passw + "' port=" + port
 
-
-
 osrm_url = 'http://localhost:6001'
 
-
-
 con = psycopg2.connect(connect_string)
-
-
 
 cursor = con.cursor()
 
@@ -84,7 +63,7 @@ def edit_raw():
 
 
 
-    #init df:
+        #init df:
 
     df = pd.DataFrame(columns = ['gid', 'population', 'male_pop', 'female_pop', 'median_age', 'pop_euro', 'pop_maori', 'pop_pacific', 'pop_asian', 'pop_melaa'])#, 'median_house_income'])
 
@@ -92,21 +71,17 @@ def edit_raw():
 
     i_1['gid'] = None
 
-    #Using a progressbar, strip the mb code and add just the digit code to col gid
+        #Using a progressbar, strip the mb code and add just the digit code to col gid
 
     with tqdm(total = len(i_1)) as pbar:
-
         for i in range(len(i_1)):
-
             if type(i_1.Area_Code.iloc[i]) == int:
-
                 i_1['gid'].iloc[i] = int(i_1.Area_Code.iloc[i])
-
                 pbar.update()
 
 
 
-    #populate columns
+        #populate columns
 
     df['gid'] = i_1['gid']
 
@@ -120,7 +95,7 @@ def edit_raw():
 
     df['pop_euro'] = i_1['Census_2018_Ethnicity..grouped_level_1_1_European_CURP']
 
-    df['pop_maori'] = i_1['Census_2018_Ethnicity..grouped_level_1_2_MÄori_CURP']
+    df['pop_maori'] = i_1['Census_2018_Ethnicity..grouped_level_1_2_MÄ\x81ori_CURP']
 
     df['pop_pacific'] = i_1['Census_2018_Ethnicity..grouped_level_1_3_Pacific.Peoples_CURP']
 
