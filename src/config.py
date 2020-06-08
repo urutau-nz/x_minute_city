@@ -54,11 +54,6 @@ def cfg_init(state):
         # url to the osrm routing machine
         context['port'] = '6001'
         context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','library']
-    elif state == 'nz':
-        db['name'] = 'access_nz'
-        context['state'] = 'new-zealand'
-        # url to the osrm routing machine
-        context['port'] = '6001'
 
 
     context['osrm_url'] = 'http://localhost:' + context['port']
