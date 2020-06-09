@@ -40,3 +40,4 @@ def append_dests(state):
     gdf.to_sql('destinations', engine, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='POINT', srid= 4269)})
 
 state = input('State: ')
+append_dests(state)
