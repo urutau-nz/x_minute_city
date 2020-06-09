@@ -4,11 +4,13 @@ e.g https://www.educationcounts.govt.nz/data-services/directories/list-of-nz-sch
 This script has been created with NZ schools in mind but may be adapted for other dest types.
 '''
 #for downtown:
-df = pd.DataFrame(columns=['id', 'dest_type', 'name', 'Latitude', 'Longitude'])
-df['id'] = list(range(len(df)))
-df.set_index('id', inplace=True)
-df_down.loc[0] = ['downtown', 'downtown', -37.7870, 175.2793]
-#then do same with gpd as below
+def add_downtown(state):
+    '''adds a point for downtown, lat and lon must be specified'''
+    df = pd.DataFrame(columns=['id', 'dest_type', 'name', 'Latitude', 'Longitude'])
+    df['id'] = list(range(len(df)))
+    df.set_index('id', inplace=True)
+    df_down.loc[0] = ['downtown', 'downtown', -37.7870, 175.2793]
+    #then do same with gpd as below
 
 
 from config import *
