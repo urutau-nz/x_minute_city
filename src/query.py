@@ -59,11 +59,11 @@ def create_dest_table(db, context):
         files = '/homedirs/dak55/resilience_equity/data/{}/{}_{}.shp'.format(context['city_code'], dest_type, context['city_code'])
         df_type = gpd.read_file('{}'.format(files))
         # df_type = pd.read_csv('data/destinations/' + dest_type + '_FL.csv', encoding = "ISO-8859-1", usecols = ['id','name','lat','lon'])
-if df_type.crs['init'] != 'epsg:4269':
-    # project into lat lon
-    df_type.crs = "EPSG:4269"
-        df_type['dest_type'] = dest_type
-        gdf = gdf.append(df_type)
+    if df_type.crs['init'] != 'epsg:4269':
+        # project into lat lon
+        df_type.crs = "EPSG:4269"
+            df_type['dest_type'] = dest_type
+            gdf = gdf.append(df_type)
 
     # set a unique id for each destination
     gdf['id'] = range(len(gdf))
