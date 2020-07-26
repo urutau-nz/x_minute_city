@@ -59,9 +59,9 @@ def create_dest_table(db, context):
         files = '/homedirs/dak55/resilience_equity/data/{}/{}_{}.shp'.format(context['city_code'], dest_type, context['city_code'])
         df_type = gpd.read_file('{}'.format(files))
         # df_type = pd.read_csv('data/destinations/' + dest_type + '_FL.csv', encoding = "ISO-8859-1", usecols = ['id','name','lat','lon'])
-        if df_type.crs['init'] != 'epsg:4269':
-            # project into lat lon
-            df_type = df_type.to_crs({'init':'epsg:4269'})
+if df_type.crs['init'] != 'epsg:4269':
+    # project into lat lon
+    df_type.crs = "EPSG:4269"
         df_type['dest_type'] = dest_type
         gdf = gdf.append(df_type)
 
@@ -70,13 +70,14 @@ def create_dest_table(db, context):
     # prepare for sql
     gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     #drop all columns except id, dest_type, and geom
-    gdf = gdf[['id','dest_type', 'Name', 'geom']]
+    gdf = gpd.GeoDataFrame(gdf[['id','dest_type', 'Name', 'geom']])
+    gdf.crs = "EPSG:4269"
     gdf = gdf.rename(columns={'Name':'name'})
     # set index
-    gdf.set_index(['id','dest_type'], inplace=True)
+    #gdf.set_index(['id','dest_type'], inplace=True)
 
     # export to sql
-    gdf.to_sql('destinations', engine, if_exists='replace', dtype={'geom': Geometry('POINT', srid= 4269)})
+    gdf.to_sql('destinations', db['engine'], if_exists='append', dtype={'geom': Geometry('POINT', srid= 4269)})
 
     # update indices
     cursor = con.cursor()

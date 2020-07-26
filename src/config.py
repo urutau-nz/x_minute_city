@@ -23,6 +23,7 @@ from scipy.integrate import simps
 import matplotlib.pyplot as plt
 import random
 import seaborn as sns
+from geoalchemy2 import Geometry, WKTElement
 # logging
 import logging
 logging.basicConfig(
@@ -45,6 +46,7 @@ def cfg_init(state):
         context['state'] = 'new-zealand'
         # url to the osrm routing machine
         context['port'] = '6001'
+        context['otp_port'] = '8085'
         context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','medical_clinic']
     elif state == 'nz_ham':
         db['name'] = 'access_nz_ham'
@@ -53,10 +55,21 @@ def cfg_init(state):
         context['state'] = 'new-zealand'
         # url to the osrm routing machine
         context['port'] = '6001'
+        context['otp_port'] = '9504'
+        context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','library']
+    elif state == 'monte_chc':
+        db['name'] = 'monte_christchurch'
+        context['city_code'] = 'chc'
+        context['city'] = 'Christchurch'
+        context['state'] = 'new-zealand'
+        # url to the osrm routing machine
+        context['port'] = '6001'
+        context['otp_port'] = '8085'
         context['services'] = ['supermarket', 'police_station', 'hospital', 'fire_station','library']
 
 
     context['osrm_url'] = 'http://localhost:' + context['port']
+    context['otp_url'] = "http://localhost:" + context['otp_port'] + "/otp/routers/default/plan?"
     # connect to database
     db['engine'] = create_engine('postgresql+psycopg2://postgres:' + db['passw'] + '@' + db['host'] + '/' + db['name'] + '?port=' + db['port'])
     db['address'] = "host=" + db['host'] + " dbname=" + db['name'] + " user=postgres password='"+ db['passw'] + "' port=" + db['port']
