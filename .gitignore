@@ -14,8 +14,11 @@ inequality_function_test.py
 *.ai
 *.pdf
 *.csv
+<<<<<<< HEAD
 
 *.dbf
 *.prj
 *.shp
 *.shx
+=======
+>>>>>>> 61cccc56f52c22bb4a8e4f3da4b8daa0ba693a49
