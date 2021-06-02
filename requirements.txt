@@ -29,5 +29,5 @@ Shapely==1.7.0
 six==1.15.0
 SQLAlchemy==1.3.17
 tqdm==4.46.1
-urllib3==1.25.9
+urllib3==1.26.5
 zope.interface==5.1.0
